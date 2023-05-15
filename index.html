@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport">
+    <title>AJAX Request</title>
+    <style>
+      #result1,#result2,#result3,#result4,#result5{
+        height: 100px;
+        width: 200px;
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <button>Send</button>    
+    <div id="result1"></div>
+    <div id="result2"></div>
+    <div id="result3"></div>
+    <button>Send2</button>
+    <div id="result4"></div>
+    <button>Send3</button>
+    <div id="result5"></div>
+    <button>Send Request</button>
+    <button>Cancel Request</button>
+    <script>
+      const btn = document.getElementsByTagName('button')[0];
+      const result1 = document.getElementById("result1");
+      const result2 = document.getElementById("result2");
+      const result3 = document.getElementById("result3");
+
+      const btn2 = document.getElementsByTagName('button')[1];
+      const result4 = document.getElementById('result4');
+
+      const btn3 = document.getElementsByTagName('button')[2];
+      const result5 = document.getElementById('result5');
+
+      const btn4 = document.getElementsByTagName('button')[3];
+      const btn5 = document.getElementsByTagName('button')[4];
+
+      btn.onclick = function(){
+        //Create AJAX obejct
+        const xhr = new XMLHttpRequest();
+        //Initialization
+        xhr.open('GET', 'http://127.0.0.1:80/?a=100&b=200')
+        //Send
+        xhr.send();
+        //Event Bind, handle result from sever
+        //readyState is a attribute of xhr, it have 0,1,2,3,4 five value.
+        // 0 - initialization
+        // 1 - open
+        // 2 - send
+        // 3 - sever send part of results
+        // 4 - sever send all results
+        // onreadystatechange will be trigger 4 times
+        xhr.onreadystatechange = function(){
+          if(xhr.readyState === 4){
+            if(xhr.status >= 200 && xhr.status < 300){
+              console.log(xhr.status);
+              console.log(xhr.statusText);
+              console.log(xhr.getAllResponseHeaders());
+              console.log(xhr.response);
+              result1.innerHTML = xhr.response;
+            }
+          }
+        }
+      }
+
+      result2.addEventListener('mouseover', function () {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', 'http://127.0.0.1:80/')
+          //content-type is used to define the type of response payload
+          xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
+          //想要自由设置请求头 需要在后端加access-control-allow-header
+          xhr.setRequestHeader('freedom', 'happy');
+          xhr.send('a=100&b=200&c=300');
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                result2.innerHTML = xhr.response;
+              }
+            }
+          }
+        })
+
+        window.onkeydown = function(){
+          const xhr = new XMLHttpRequest();
+          // 方法1
+          xhr.responseType = 'json';
+          xhr.open('GET', 'http://127.0.0.1:80/json');
+
+          xhr.send();
+
+          xhr.onreadystatechange = function(){
+            if (xhr.readyState === 4) {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                result3.innerHTML = xhr.response.name;
+                // 方法2
+                // const data = JSON.parse(xhr.response);
+                // result3.innerHTML = data.name;
+              }
+            }
+          }          
+        }
+
+        btn2.addEventListener('click', function(){
+          console.log('feqq')
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET','http://127.0.0.1:80/ie?t='+Date.now());
+          xhr.send();
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                result4.innerHTML = xhr.response;
+              }
+            }
+          }      
+        });
+
+        btn3.addEventListener('click', function(){
+          const xhr = new XMLHttpRequest();
+
+          xhr.timeout = 2000;
+          xhr.ontimeout = function(){
+            alert('Reuqest Delayed!!');
+          }
+          // network wrong
+          xhr.onerror = function(){
+            alert('Your network may appear error..')
+          }
+
+          xhr.open('GET', 'http://127.0.0.1:80/delay');
+          xhr.send();
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4) {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                result5.innerHTML = xhr.response;
+              }
+            }
+          }     
+        });
+
+        let x = null;
+        let isSending = false;
+        btn4.onclick = function(){
+          if(isSending) x.abort();
+          x = new XMLHttpRequest();
+          isSending = true;
+          x.open('GET', 'http://127.0.0.1:80/delay');
+          x.send();
+          x.onreadystatechange = function(){
+            if(x.readyState === 4){
+              isSending = false;
+            }
+          }
+        }
+
+        btn5.onclick = function(){
+          x.abort();
+        }
+    </script>
+  </body>
+</html>
